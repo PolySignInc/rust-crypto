@@ -19,10 +19,13 @@ pub fn supports_aesni() -> bool {
 }
 
 extern {
+    //disable this as it calls the assembly routine not available for powerpc
+    #[cfg(not(target_arch = "powerpc"))]
     pub fn rust_crypto_util_fixed_time_eq_asm(
             lhsp: *const u8,
             rhsp: *const u8,
             count: libc::size_t) -> u32;
+
     pub fn rust_crypto_util_secure_memset(
             dst: *mut u8,
             val: libc::uint8_t,
@@ -38,9 +41,24 @@ pub fn secure_memset(dst: &mut [u8], val: u8) {
     }
 }
 
+
+pub fn fixed_time_eq(lhs: &[u8], rhs: &[u8]) -> bool {
+    if lhs.len() != rhs.len() {
+        false
+    } else {
+            for i in 0..lhs.len(){
+                if lhs[i] != rhs[i] {
+                    return false;
+                }
+            }
+	true
+    }
+}
+
+
 /// Compare two vectors using a fixed number of operations. If the two vectors are not of equal
 /// length, the function returns false immediately.
-pub fn fixed_time_eq(lhs: &[u8], rhs: &[u8]) -> bool {
+/*pub fn fixed_time_eq(lhs: &[u8], rhs: &[u8]) -> bool {
     if lhs.len() != rhs.len() {
         false
     } else {
@@ -53,7 +71,7 @@ pub fn fixed_time_eq(lhs: &[u8], rhs: &[u8]) -> bool {
         }
     }
 }
-
+*/
 #[cfg(test)]
 mod test {
     use util::fixed_time_eq;
